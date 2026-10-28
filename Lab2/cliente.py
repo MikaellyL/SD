@@ -1,27 +1,23 @@
-import socket 
+import rpyc
 
 HOST = '127.0.0.1'
 PORT = 8000   # Localhost
 
 def iniciar_cliente():
-    cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
     try:
-        cliente.connect((HOST, PORT))
+        # Conectar ao servidor RPyC
+        conn = rpyc.connect(HOST, PORT)
+        print(f"Conectado ao servidor RPyC em {HOST}:{PORT}")
 
-        mensagem = "olá, Mundo distribuido"
-        print(f"[ENVIANDO]{mensagem}")
+        # Solicitar o horário atual do servidor
+        horario_atual = conn.root.obter_horario()
+        print(f"Horário atual do servidor: {horario_atual}")
 
-        cliente.sendall(mensagem.encode('utf-8'))
-        
-        resposta = cliente.recv(1024).decode('utf-8')
-        print(f"[RESPOSTA DO SERVIDOR] {resposta}")
-        
-    except ConnectionRefusedError:
-        print("[ERRO] Não foi possível conectar ao servidor. Verifique se ele está rodando.")
+    except Exception as e:
+        print(f"Erro ao conectar ao servidor: {e}")
+
     finally:
-        cliente.close()
-        print("[ENCERRADO] Conexão finalizada.")
-
-if __name__ == "__main__":
-    iniciar_cliente()
+        # Fechar a conexão
+        if 'conn' in locals():
+            conn.close()
+            print("Conexão encerrada.")
